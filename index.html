@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テイクアウト注文（デモ）</title>
+
+    <!-- LINE公式SDKを読み込む -->
+    <script src="https://static.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px 15px 40px 15px;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 25px;
+            margin-top: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 25px 0 10px 5px;
+            color: #2c3e50;
+        }
+
+        .menu-list {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f1f2f6;
+            box-sizing: border-box;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-img {
+            width: 65px;
+            height: 65px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 15px;
+            background-color: #eee;
+        }
+
+        .menu-info {
+            flex: 1;
+        }
+
+        .menu-name {
+            font-weight: bold;
+            font-size: 15px;
+            color: #2d3436;
+            margin-bottom: 4px;
+        }
+
+        .menu-price {
+            font-size: 14px;
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .menu-qty select {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            background-color: #fff;
+            outline: none;
+        }
+
+        .menu-qty select:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+        }
+
+        .input-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #4a5568;
+        }
+
+        .required {
+            color: #e74c3c;
+            font-size: 11px;
+            background: #ffeaa7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        .input-card input,
+        .input-card select {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            box-sizing: border-box;
+            outline: none;
+            background-color: #fff;
+        }
+
+        .total-card {
+            background: #2c3e50;
+            color: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+        }
+
+        .total-label {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .total-price {
+            font-size: 22px;
+            font-weight: bold;
+            color: #f1c40f;
+        }
+
+        .submit-btn {
+            background-color: #06C755;
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(6, 199, 85, 0.3);
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>テイクアウト注文</h2>
+        <p class="subtitle">ご希望の商品と数量、お受け取り日時を選択してください。</p>
+
+        <form id="orderForm">
+            <div class="section-title">📦 メニュー</div>
+            <div class="menu-list">
+                <div class="menu-item">
+                    <img src="https://placehold.co" alt="ハンバーグ弁当" class="menu-img">
+                    <div class="menu-info">
+                        <div class="menu-name">特製ハンバーグ弁当</div>
+                        <div class="menu-price">¥850 (税込)</div>
+                    </div>
+                    <div class="menu-qty"><select class="menu-qty-select" data-name="ハンバーグ弁当" data-price="850"></select>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <img src="https://placehold.co" alt="唐揚げ弁当" class="menu-img">
+                    <div class="menu-info">
+                        <div class="menu-name">唐揚げ弁当</div>
+                        <div class="menu-price">¥750 (税込)</div>
+                    </div>
+                    <div class="menu-qty"><select class="menu-qty-select" data-name="唐揚げ弁当" data-price="750"></select>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <img src="https://placehold.co" alt="生姜焼き弁当" class="menu-img">
+                    <div class="menu-info">
+                        <div class="menu-name">生姜焼き弁当</div>
+                        <div class="menu-price">¥800 (税込)</div>
+                    </div>
+                    <div class="menu-qty"><select class="menu-qty-select" data-name="生姜焼き弁当" data-price="800"></select>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <img src="https://placehold.co" alt="カレーライス" class="menu-img">
+                    <div class="menu-info">
+                        <div class="menu-name">カレーライス</div>
+                        <div class="menu-price">¥700 (税込)</div>
+                    </div>
+                    <div class="menu-qty"><select class="menu-qty-select" data-name="カレーライス" data-price="700"></select>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <img src="https://placehold.co" alt="シーザーサラダ" class="menu-img">
+                    <div class="menu-info">
+                        <div class="menu-name">シーザーサラダ</div>
+                        <div class="menu-price">¥450 (税込)</div>
+                    </div>
+                    <div class="menu-qty"><select class="menu-qty-select" data-name="シーザーサラダ" data-price="450"></select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">👤 お客様情報</div>
+            <div class="input-card">
+                <div class="input-group">
+                    <label for="name">お名前 <span class="required">必須</span></label>
+                    <input type="text" id="name" placeholder="例：山田 太郎" required>
+                </div>
+                <div class="input-group">
+                    <label for="phone">ご連絡先（電話番号） <span class="required">必須</span></label>
+                    <input type="tel" id="phone" placeholder="例：09012345678" required>
+                </div>
+                <div class="input-group">
+                    <label for="pickupTime">お受け取り希望日時 <span class="required">必須</span></label>
+                    <select id="pickupTime" required>
+                        <option value="">日時を選択してください</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="total-card">
+                <div class="total-label">合計金額</div>
+                <div id="totalPriceDisplay" class="total-price">¥0</div>
+            </div>
+
+            <button type="submit" class="submit-btn">LINEで注文内容を送信する</button>
+        </form>
+    </div>
+
+
+    <script>
+        // ==========================================
+        // 1. 【URL設定】あなたの新しくデプロイし直したGASのURLを入れてください
+        // ==========================================
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxDivSJacX6t1mF4G2AA8L_5aIs7PEeKK0eiLngfiiiKX-4yJB-olwSU69WcKInh2A_fQ/exec";
+
+
+
+        let STOCK_CONFIG = {};
+
+        const qtySelects = document.querySelectorAll('.menu-qty-select');
+        const totalPriceDisplay = document.getElementById('totalPriceDisplay');
+        const pickupTimeSelect = document.getElementById('pickupTime');
+        const orderForm = document.getElementById('orderForm');
+
+        // Googleスプレッドシートからデータを取得するプログラム（おまじない付き）
+        function loadLiveStockData(callback) {
+            const refreshUrl = GAS_WEB_APP_URL + "?_=" + new Date().getTime();
+            fetch(refreshUrl)
+                .then(response => response.json())
+                .then(data => {
+                    STOCK_CONFIG = data;
+                    initProductStock();
+                    calculateTotal();
+                    if (callback) callback();
+                })
+                .catch(error => {
+                    console.error("通信エラー:", error);
+                    STOCK_CONFIG = { "ハンバーグ弁当": 5, "唐揚げ弁当": 2, "生姜焼き弁当": 5, "カレーライス": 0, "シーザーサラダ": 5 };
+                    initProductStock();
+                    calculateTotal();
+                    if (callback) callback();
+                });
+        }
+
+        // 在庫個数を画面に作り出すプログラム
+        function initProductStock() {
+            qtySelects.forEach(function (select) {
+                const itemName = select.getAttribute('data-name');
+                const maxStock = STOCK_CONFIG[itemName] !== undefined ? STOCK_CONFIG[itemName] : 5;
+                const menuItem = select.closest('.menu-item');
+
+                // 選択肢を再生成する前に、現在選ばれている個数を記憶しておく
+                const currentVal = select.value || "0";
+
+                if (menuItem) {
+                    const nameDisplay = menuItem.querySelector('.menu-name');
+                    if (maxStock <= 0 && nameDisplay) {
+                        select.disabled = true;
+                        nameDisplay.textContent = itemName + "（売切れ）";
+                        nameDisplay.style.color = "#999";
+                        nameDisplay.style.fontSize = "13px";
+
+                        while (select.options.length > 0) { select.remove(0); }
+                        const opt = document.createElement('option');
+                        opt.value = 0; opt.textContent = "0個";
+                        select.appendChild(opt);
+                        return;
+                    } else if (nameDisplay) {
+                        select.disabled = false;
+                        nameDisplay.textContent = itemName;
+                        nameDisplay.style.color = "#2d3436";
+                        nameDisplay.style.fontSize = "15px";
+                    }
+                }
+
+                while (select.options.length > 0) { select.remove(0); }
+                const limit = Math.min(maxStock, 5);
+                for (let i = 0; i <= limit; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i; opt.textContent = i + "個";
+                    select.appendChild(opt);
+                }
+
+                // 記憶していた個数を復元する（勝手に0に戻るのを防ぐ安全装置）
+                if (parseInt(currentVal) <= limit) {
+                    select.value = currentVal;
+                } else {
+                    select.value = "0";
+                }
+            });
+        }
+
+        // 時間枠を作り出すプログラム
+        function updatePickupTimeSlots() {
+            if (!pickupTimeSelect) return;
+            while (pickupTimeSelect.options.length > 1) { pickupTimeSelect.remove(1); }
+            const now = new Date();
+            const timeSlotsConfig = [
+                { label: "本日 11:30〜12:00", dayOffset: 0, hour: 11, minute: 30 },
+                { label: "本日 12:00〜12:30", dayOffset: 0, hour: 12, minute: 0 },
+                { label: "本日 17:30〜18:00", dayOffset: 0, hour: 17, minute: 30 },
+                { label: "本日 18:00〜18:30", dayOffset: 0, hour: 18, minute: 0 },
+                { label: "明日 12:00〜12:30", dayOffset: 1, hour: 12, minute: 0 }
+            ];
+            timeSlotsConfig.forEach(function (slot) {
+                const option = document.createElement('option');
+                option.value = slot.label; option.textContent = slot.label;
+                const targetDate = new Date();
+                targetDate.setDate(now.getDate() + slot.dayOffset);
+                targetDate.setHours(slot.hour, slot.minute, 0, 0);
+                const limitTime = new Date(now.getTime() - (30 * 60 * 1000));
+                if (targetDate < limitTime) { option.disabled = true; option.textContent += "（受付終了）"; }
+                pickupTimeSelect.appendChild(option);
+            });
+        }
+
+        // 金額の自動計算プログラム
+        function calculateTotal() {
+            let total = 0;
+            qtySelects.forEach(function (select) {
+                const price = parseInt(select.getAttribute('data-price')) || 0;
+                const qty = parseInt(select.value) || 0;
+                total += price * qty;
+            });
+            if (totalPriceDisplay) { totalPriceDisplay.textContent = "¥" + total.toLocaleString(); }
+            return total;
+        }
+
+        // 画面起動時の初期動作
+        loadLiveStockData();
+        updatePickupTimeSlots();
+
+        // 連動設定
+        qtySelects.forEach(function (select) {
+            select.addEventListener('change', calculateTotal);
+
+            // 数量ボタンをタップした瞬間に裏側で最新在庫を再確認する連動設定
+            select.addEventListener('focus', function () {
+                loadLiveStockData();
+            });
+        });
+        pickupTimeSelect.addEventListener('focus', updatePickupTimeSlots);
+
+
+        // ==========================================
+        // 3. 送信ボタンが押されたときの最終チェック＆送信（連打防止・ロック機能付き）
+        // ==========================================
+        if (orderForm) {
+            orderForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // 🌟【ここを追加】送信ボタンを特定し、押された瞬間に「グレーアウト」してクリック不可にします
+                const submitBtn = orderForm.querySelector('.submit-btn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.style.backgroundColor = "#95afc0"; // グレー色に変更
+                    submitBtn.innerText = "通信中..."; // 文字を切り替える
+                }
+
+                const name = document.getElementById('name').value;
+                const customerPhone = document.getElementById('phone').value;
+                const pickupTime = pickupTimeSelect.value;
+
+                let selectedItemsText = "";
+                let lineSelectedItemsText = "";
+                let hasItem = false;
+
+                qtySelects.forEach(function (select) {
+                    const qty = parseInt(select.value) || 0;
+                    if (qty > 0) {
+                        const itemName = select.getAttribute('data-name');
+                        selectedItemsText += "・" + itemName + ": " + qty + "個\n";
+                        lineSelectedItemsText += "・" + itemName + ": " + qty + "個\n";
+                        hasItem = true;
+                    }
+                });
+
+                // 🌟【ボタン復活関数】エラーやキャンセルで画面に戻る際、ボタンを元の緑色に戻すための処理
+                function resetSubmitButton() {
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.style.backgroundColor = "#06C755";
+                        submitBtn.innerText = "LINEで注文内容を送信する";
+                    }
+                }
+
+                if (!hasItem) { alert('商品を1つ以上選択してください。'); resetSubmitButton(); return; }
+                if (!pickupTime) { alert('受け取り日時を選択してください。'); resetSubmitButton(); return; }
+
+                const refreshUrl = GAS_WEB_APP_URL + (GAS_WEB_APP_URL.includes('?') ? '&' : '?') + '_=' + new Date().getTime();
+
+                fetch(refreshUrl, { method: 'GET', cache: 'no-store' })
+                    .then(function (response) {
+                        if (!response.ok) { throw new Error('ネットワーク応答が正常ではありません'); }
+                        return response.json();
+                    })
+                    .then(function (latestStock) {
+                        STOCK_CONFIG = latestStock;
+
+                        let isSoldOutNow = false;
+                        let soldOutItems = [];
+
+                        qtySelects.forEach(function (select) {
+                            const qty = parseInt(select.value) || 0;
+                            if (qty > 0) {
+                                const itemName = select.getAttribute('data-name');
+                                const currentStock = STOCK_CONFIG[itemName] !== undefined ? STOCK_CONFIG[itemName] : 0;
+                                if (currentStock < qty) {
+                                    isSoldOutNow = true;
+                                    soldOutItems.push(itemName);
+                                }
+                            }
+                        });
+
+                        // もし直前で売り切れていた場合（赤字警告）
+                        if (isSoldOutNow) {
+                            let alertDiv = document.getElementById('stockAlertMessage');
+                            if (!alertDiv) {
+                                alertDiv = document.createElement('div');
+                                alertDiv.id = 'stockAlertMessage';
+                                alertDiv.style.color = '#e74c3c';
+                                alertDiv.style.fontWeight = 'bold';
+                                alertDiv.style.textAlign = 'center';
+                                alertDiv.style.marginTop = '15px';
+                                alertDiv.style.padding = '12px';
+                                alertDiv.style.background = '#ffeaf0';
+                                alertDiv.style.border = '1px solid #e74c3c';
+                                alertDiv.style.borderRadius = '8px';
+                                orderForm.insertBefore(alertDiv, totalPriceDisplay.closest('.total-card').nextSibling);
+                            }
+                            alertDiv.innerHTML = `⚠️ 申し訳ありません！売り切れです！<br>【${soldOutItems.join(', ')}】が直前で在庫不足になりました。<br>個数を選び直してください。`;
+                            initProductStock();
+                            calculateTotal();
+                            resetSubmitButton(); // 🌟売り切れの時は選べ直せるようにボタンを復活させます
+                            return;
+                        }
+
+                        // 在庫がセーフなら警告文を消して確認ポップアップを出す
+                        const alertDiv = document.getElementById('stockAlertMessage');
+                        if (alertDiv) alertDiv.remove();
+
+                        const confirmMessage = `以下の内容で注文を送信（LINE起動）しますか？\n\n・お名前: ${name} 様\n・連絡先: ${customerPhone}\n【注文商品】\n${selectedItemsText}・合計金額: ¥${total.toLocaleString()}\n・受取日時: ${pickupTime}`;
+
+                        if (!confirm(confirmMessage)) {
+                            resetSubmitButton(); // 🌟ポップアップをキャンセルした時はボタンを復活させます
+                            return;
+                        }
+
+                        const messageText = `【テイクアウト注文】\nお名前: ${name} 様\n連絡先: ${customerPhone}\n【商品内容】\n${lineSelectedItemsText}合計: ¥${total.toLocaleString()}\n受取: ${pickupTime}\n\n※このままお店からの返信をお待ちください。`;
+
+                        liff.sendMessages([{ 'type': 'text', 'text': messageText }])
+                            .then(function () { alert("注文メッセージを送信しました！"); liff.closeWindow(); })
+                            .catch(function (err) { alert("送信に失敗しました。公式LINEのトーク画面内でお試しください。"); resetSubmitButton(); console.error(err); });
+                    })
+                    .catch(function (error) {
+                        console.log("最終確認通信をスキップし、そのまま送信フェーズへ進みます:", error);
+
+                        const total = calculateTotal();
+                        const confirmMessage = `以下の内容で注文を送信（LINE起動）しますか？\n\n・お名前: ${name} 様\n・連絡先: ${customerPhone}\n【注文商品】\n${selectedItemsText}・合計金額: ¥${total.toLocaleString()}\n・受取日時: ${pickupTime}`;
+
+                        if (!confirm(confirmMessage)) {
+                            resetSubmitButton(); // 🌟キャンセル時は復活
+                            return;
+                        }
+
+                        const messageText = `【テイクアウト注文】\nお名前: ${name} 様\n連絡先: ${customerPhone}\n【商品内容】\n${lineSelectedItemsText}合計: ¥${total.toLocaleString()}\n受取: ${pickupTime}\n\n※このままお店からの返信をお待ちください。`;
+
+                        liff.sendMessages([{ 'type': 'text', 'text': messageText }])
+                            .then(function () { alert("注文メッセージを送信しました！"); liff.closeWindow(); })
+                            .catch(function (err) { alert("送信に失敗しました。公式LINEのトーク画面内でお試しください。"); resetSubmitButton(); console.error(err); });
+                    });
+            });
+        }
+
+
+
+
+
+
+
+
+        // LINEの初期化（エラーを逃がして計算を止めない超安全設計）
+        liff.init({ liffId: "2011383351-oeSaS7vS" })
+            .then(() => {
+                console.log("LINEログイン初期化完了");
+                if (!liff.isLoggedIn()) { liff.login(); }
+            })
+            .catch((err) => {
+                console.log("LINE外通信モード（計算プログラムは正常稼働します）");
+            });
+    </script>
+</body>
+
+</html>
